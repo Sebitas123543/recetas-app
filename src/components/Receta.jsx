@@ -1,15 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Receta() {
   const [busqueda, setBusqueda] = useState("");
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
   const [recetas, setRecetas] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
-  const buscarRecetas = async () => {
+  // Cargar las categorías una sola vez al montar el componente
+  useEffect(() => {
+    fetch("https://www.themealdb.com/api/json/v1/1/list.php?c=list")
+      .then((res) => res.json())
+      .then((data) => setCategorias(data.meals))
+      .catch(() => setCategorias([]));
+  }, []);
+
+  const buscarPorNombre = async () => {
     if (!busqueda.trim()) return;
     setCargando(true);
     setError("");
+    setCategoriaSeleccionada("");
     try {
       const res = await fetch(
         `https://www.themealdb.com/api/json/v1/1/search.php?s=${busqueda}`
@@ -25,24 +36,67 @@ function Receta() {
     }
   };
 
+  const buscarPorCategoria = async (categoria) => {
+    setCategoriaSeleccionada(categoria);
+    setBusqueda("");
+    if (!categoria) {
+      setRecetas([]);
+      return;
+    }
+    setCargando(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `https://www.themealdb.com/api/json/v1/1/filter.php?c=${categoria}`
+      );
+      const data = await res.json();
+      if (!data.meals) throw new Error("No se encontraron recetas");
+      setRecetas(data.meals);
+    } catch (err) {
+      setError(err.message);
+      setRecetas([]);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   return (
-    <div>
-      <input
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        placeholder="Escribe una receta (ej: chicken)"
-      />
-      <button onClick={buscarRecetas}>Buscar</button>
+    <div className="contenedor">
+      <div className="controles">
+        <div className="buscador">
+          <input
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar receta (ej: chicken)"
+          />
+          <button onClick={buscarPorNombre}>Buscar</button>
+        </div>
 
-      {cargando && <p>Cargando...</p>}
-      {error && <p>{error}</p>}
+        <select
+          value={categoriaSeleccionada}
+          onChange={(e) => buscarPorCategoria(e.target.value)}
+        >
+          <option value="">-- Filtrar por categoría --</option>
+          {categorias.map((cat) => (
+            <option key={cat.strCategory} value={cat.strCategory}>
+              {cat.strCategory}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <div>
+      {cargando && <p className="mensaje">Cargando...</p>}
+      {error && <p className="mensaje error">{error}</p>}
+      {!cargando && !error && recetas.length === 0 && (
+        <p className="mensaje">Busca una receta o elige una categoría</p>
+      )}
+
+      <div className="grid-recetas">
         {recetas.map((r) => (
-          <div key={r.idMeal}>
+          <div className="tarjeta" key={r.idMeal}>
+            <img src={r.strMealThumb} alt={r.strMeal} />
             <h3>{r.strMeal}</h3>
-            <img src={r.strMealThumb} alt={r.strMeal} width="200" />
-            <p>Categoría: {r.strCategory}</p>
+            {r.strCategory && <p className="categoria">{r.strCategory}</p>}
           </div>
         ))}
       </div>
