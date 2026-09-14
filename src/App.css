@@ -99,3 +99,64 @@ button:hover {
   color: #888;
   margin: 0 0.5rem 0.6rem;
 }
+
+.tarjeta {
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 10;
+}
+
+.modal {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  text-align: left;
+}
+
+.cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: transparent;
+  color: #333;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+}
+
+.cerrar:hover {
+  background: #eee;
+}
+
+.imagen-detalle {
+  width: 100%;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.lista-ingredientes {
+  padding-left: 1.2rem;
+}
+
+.lista-ingredientes li {
+  margin-bottom: 0.3rem;
+}
+
+.instrucciones {
+  white-space: pre-line;
+  line-height: 1.6;
+}
